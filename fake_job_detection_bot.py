@@ -1,13 +1,20 @@
 import streamlit as st
+import os
 from openai import OpenAI
 
-# 🔑 Replace with your OpenAI API Key
-client = OpenAI(api_key="your api key")
-
+# Page config
 st.set_page_config(page_title="Fake Job Detection Bot", layout="centered")
 
 st.title("🕵️ Fake Job Detection Bot")
-st.write("Analyze job messages, emails, or internship offers to check if they are Fake, Genuine, or Suspicious.")
+st.write(
+    "Analyze job messages, emails, or internship offers to check if they are "
+    "Fake, Genuine, or Suspicious."
+)
+
+# Get API key from Streamlit Secrets
+client = OpenAI(
+    api_key=os.getenv("OPENAI_API_KEY")
+)
 
 job_message = st.text_area(
     "📩 Paste Job Message Here",
@@ -29,8 +36,9 @@ Your task is to analyze job-related messages and classify them as:
 3) Suspicious (Needs Verification)
 
 Instructions:
-- Look for money requests, personal data requests, urgency, unrealistic salary,
-  WhatsApp/Telegram-only communication, or no interview.
+- Look for money requests, personal data requests, urgency,
+  unrealistic salary, WhatsApp/Telegram-only communication,
+  or no interview.
 - Be student-friendly and calm.
 
 Response Format:
@@ -42,14 +50,12 @@ Job Message:
 \"\"\"{job_message}\"\"\"
 """
 
-            response = client.chat.completions.create(
-                model="gpt-4o-mini",
-                messages=[
-                    {"role": "system", "content": "You are a Fake Job Detection Bot focused on student safety."},
-                    {"role": "user", "content": prompt}
-                ],
-                temperature=0.2
+            # ✅ NEW OpenAI API (IMPORTANT)
+            response = client.responses.create(
+                model="gpt-4.1-mini",
+                input=prompt
             )
 
             st.success("✅ Analysis Complete")
-            st.markdown(response.choices[0].message.content)
+            st.markdown(response.output_text)
+
